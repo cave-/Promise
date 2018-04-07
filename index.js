@@ -1,16 +1,18 @@
 function Promise(func) {
-    this.promiseStr = 'pending'
     var self = this;
-    var funcString = func.toString();
-    funcString = funcString.replace(/resolve\((.*)\)/ig, function (m, p1) {
-        return m + ';_resolve(' + p1 + ')'
-    })
-    eval('!' + funcString + '(function(){})');
+    this.promiseStr = 'pending'
 
     function _resolve(param) {
         self.promiseStr = 'resolved'
         self._resolve(param)
     }
+
+    function _reject(param) {
+        self.promiseStr = 'rejected'
+        self._reject(param)
+    }
+
+    func(_resolve, _reject)
 }
 
 Promise.prototype.then = function (resolve, reject) {
@@ -36,7 +38,7 @@ var p = new Promise(function (resolve, reject) {
 })
 
 p.then(function (res) {
-    alert(res)
+    console.log(res)
 }, function () {
 
 })
