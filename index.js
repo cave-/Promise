@@ -1,34 +1,49 @@
 function Promise(func) {
     var self = this;
-    this.promiseStr = 'Pending'
+    this.promiseStatus = 'Pending'
 
-    function _resolve(param) {
-        self.promiseStr = 'Fulfilled'
-        self._resolve(param)
-    }
-
-    function _reject(param) {
-        self.promiseStr = 'Rejected'
-        self._reject(param)
-    }
-
-    func(_resolve, _reject)
+    func(function (value) {
+        self.promiseStatus = 'Fulfilled'
+        self._onFulfilled(value)
+    }, function (reason) {
+        self.promiseStatus = 'Rejected'
+        self._onFulfilled(reason)
+    })
 }
 
-Promise.prototype.then = function (resolve, reject) {
-    if (typeof resolve != 'function' || typeof reject != 'function') return;
-
-    if (this.promiseStr == 'Fulfilled') {
-        resolve(this.resolved)
+Promise.prototype.then = function (onFulfilled, onRejected) {
+    switch (this.promiseStatus) {
+        case 'Pending':
+            if (typeof onFulfilled === 'function') {
+                this._onFulfilled = onFulfilled
+            }        
+            if (typeof onRejected === 'function') {
+                this._onRejected = onRejected
+            }
+            break;
+        case 'Fulfilled':
+            if (typeof onFulfilled === 'function') {
+                onFulfilled(this.value)
+            }
+            break;
+        case 'Rejected':
+            if (typeof onRejected === 'function') {
+                onRejected(this.reason)
+            }
+            break;
+        default:
+            break;
     }
-
-    if (this.promiseStr == 'Pending') {
-        this._resolve = resolve;
-    }
+    
+    return this;
 }
 
-Promise.prototype._resolve = function (res) {
-    this.resolved = res;
+Promise.prototype._onFulfilled = function (value) {
+    this.value = value
+}
+
+Promise.prototype._onRejected = function (reason) {
+    this.reason = reason
 }
 
 var p = new Promise(function (resolve, reject) {
@@ -38,7 +53,11 @@ var p = new Promise(function (resolve, reject) {
 })
 
 p.then(function (res) {
-    console.log(res)
-}, function () {
-
+    console.log(res, '1')
+}, function (rej) {
+    console.log(rej, '1')
+}).then(function (res) {
+    console.log(res, '2')
+}, function (rej) {
+    console.log(rej, '2')
 })
