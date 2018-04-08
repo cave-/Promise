@@ -1,14 +1,14 @@
 function Promise(func) {
     var self = this;
-    this.promiseStr = 'pending'
+    this.promiseStr = 'Pending'
 
     function _resolve(param) {
-        self.promiseStr = 'resolved'
+        self.promiseStr = 'Fulfilled'
         self._resolve(param)
     }
 
     function _reject(param) {
-        self.promiseStr = 'rejected'
+        self.promiseStr = 'Rejected'
         self._reject(param)
     }
 
@@ -18,11 +18,11 @@ function Promise(func) {
 Promise.prototype.then = function (resolve, reject) {
     if (typeof resolve != 'function' || typeof reject != 'function') return;
 
-    if (this.promiseStr == 'resolved') {
+    if (this.promiseStr == 'Fulfilled') {
         resolve(this.resolved)
     }
 
-    if (this.promiseStr == 'pending') {
+    if (this.promiseStr == 'Pending') {
         this._resolve = resolve;
     }
 }
