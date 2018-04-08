@@ -1,4 +1,4 @@
-function Promise(func) {
+function Train(func) {
     this.status = 'Pending'
     this._onFulfilled = []
     this._onRejected = []
@@ -6,7 +6,7 @@ function Promise(func) {
     func(this._Fulfilled.bind(this), this._Rejected.bind(this))
 }
 
-Promise.prototype._Fulfilled = function (value) {
+Train.prototype._Fulfilled = function (value) {
     this.status = 'Fulfilled'
     this.value = value
 
@@ -17,7 +17,7 @@ Promise.prototype._Fulfilled = function (value) {
     }
 }
 
-Promise.prototype._Rejected = function (reason) {
+Train.prototype._Rejected = function (reason) {
     this.status = 'Rejected'
     this.reason = reason
 
@@ -28,7 +28,9 @@ Promise.prototype._Rejected = function (reason) {
     }
 }
 
-Promise.prototype.then = function (onFulfilled, onRejected) {
+Train.prototype.then = function (onFulfilled, onRejected) {
+    var thenReturn = new Train()
+
     switch (this.status) {
         case 'Pending':
             if (typeof onFulfilled === 'function') {
@@ -52,10 +54,10 @@ Promise.prototype.then = function (onFulfilled, onRejected) {
             break;
     }
     
-    return this;
+    return thenReturn;
 }
 
-var p = new Promise(function (resolve, reject) {
+var p = new Train(function (resolve, reject) {
     setTimeout(function () {
         resolve('hohoho')
     }, 3000)
