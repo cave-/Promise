@@ -1,3 +1,7 @@
+try {
+    module.exports = Train
+} catch (e) {}
+
 function Train(func) {
     this.status = 'Pending'
     this._onFulfilled = []
@@ -57,27 +61,11 @@ Train.prototype.then = function (onFulfilled, onRejected) {
     return thenReturn;
 }
 
-var p = new Train(function (resolve, reject) {
-    setTimeout(function () {
-        resolve('hohoho')
-    }, 3000)
-})
-
-p.then(function (res) {
-    var x = true;
-    console.log(res, '1')
-    return x
-}, function (rej) {
-    console.log(rej, '1')
-    throw new Error();
-}).then(function (res) {
-    console.log(res, '11')
-}, function (rej) {
-    console.log(rej, '1')
-})
-
-p.then(function (res) {
-    console.log(res, '2')
-}, function (rej) {
-    console.log(rej, '2')
-})
+Train.deferred = Train.defer = function () {
+    var dfd = {}
+    dfd.promise = new Train(function (resolve, reject) {
+        dfd.resolve = resolve
+        dfd.reject = reject
+    })
+    return dfd
+}
