@@ -7,7 +7,9 @@ function Train(func) {
     this._onFulfilled = []
     this._onRejected = []
 
-    func(this._Fulfilled.bind(this), this._Rejected.bind(this))
+    if (typeof func === 'function') {
+        func(this._Fulfilled.bind(this), this._Rejected.bind(this))
+    }
 }
 
 Train.prototype._Fulfilled = function (value) {
@@ -33,7 +35,7 @@ Train.prototype._Rejected = function (reason) {
 }
 
 Train.prototype.then = function (onFulfilled, onRejected) {
-    var thenReturn = new Train()
+    var train2 = new Train()
 
     switch (this.status) {
         case 'Pending':
@@ -58,7 +60,19 @@ Train.prototype.then = function (onFulfilled, onRejected) {
             break;
     }
     
-    return thenReturn;
+    return train2;
+}
+
+function promiseResolve(promise, x) {
+    if (promise === x) {
+
+    } else if (x instanceof Train) {
+
+    } else if (x && (typeof x === 'function' || typeof x === 'object')) {
+
+    } else {
+
+    }
 }
 
 Train.deferred = Train.defer = function () {
