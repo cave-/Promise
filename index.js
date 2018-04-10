@@ -122,6 +122,22 @@ function promiseResolve(promise, x) {
     }
 }
 
+// use case for promise chain
+new Train(function (r, j) {
+    setTimeout(function(){
+        r('first p >>>')
+    }, 3000)
+}).then(function (res) {
+    return new Promise(function (r, j) {
+        setTimeout(function () {
+            r(res + ' sencond p >>>')
+        }, 3000)
+    })
+}).then(function (res) {
+    console.log(res + ' end');
+})
+
+// deferred for promise test
 Train.deferred = Train.defer = function () {
     var dfd = {}
     dfd.promise = new Train(function (resolve, reject) {
