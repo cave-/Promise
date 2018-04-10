@@ -4,74 +4,121 @@ try {
 
 function Train(func) {
     this.status = 'Pending'
-    this._onFulfilled = []
-    this._onRejected = []
-
+    this._onFulfilledCallbacks = []
+    this._onRejectedCallbacks = []
+    
     if (typeof func === 'function') {
-        func(this._Fulfilled.bind(this), this._Rejected.bind(this))
+        func(this._fulfilled.bind(this), this._rejected.bind(this))
     }
 }
 
-Train.prototype._Fulfilled = function (value) {
+Train.prototype._fulfilled = function (value) {
+    var self = this
     this.status = 'Fulfilled'
     this.value = value
-
-    if (this._onFulfilled.length > 0) {
-        this._onFulfilled.map(function (item) {
-            item.call(undefined, value)
-        })
-    }
+    
+    setTimeout(function () {
+        if (self._onFulfilledCallbacks.length > 0) {
+            self._onFulfilledCallbacks.map(function (item) {
+                item.call(undefined, value)
+            })
+        }
+    })
 }
 
-Train.prototype._Rejected = function (reason) {
+Train.prototype._rejected = function (reason) {
+    var self = this
     this.status = 'Rejected'
     this.reason = reason
 
-    if (this._onRejected.length > 0) {
-        this._onRejected.map(function (item) {
-            item.call(undefined, reason)
-        })
-    }
+    setTimeout(function () {
+        if (self._onRejectedCallbacks.length > 0) {
+            self._onRejectedCallbacks.map(function (item) {
+                item.call(undefined, reason)
+            })
+        }
+    })
 }
 
 Train.prototype.then = function (onFulfilled, onRejected) {
+    var self = this
     var train2 = new Train()
 
     switch (this.status) {
         case 'Pending':
-            if (typeof onFulfilled === 'function') {
-                this._onFulfilled.push(onFulfilled)
-            }        
-            if (typeof onRejected === 'function') {
-                this._onRejected.push(onRejected)
-            }
+                this._onFulfilledCallbacks.push(r)
+                this._onRejectedCallbacks.push(j)
             break;
         case 'Fulfilled':
-            if (typeof onFulfilled === 'function') {
-                onFulfilled(this.value)
-            }
+            setTimeout(r)
             break;
         case 'Rejected':
-            if (typeof onRejected === 'function') {
-                onRejected(this.reason)
-            }
+            setTimeout(j)
             break;
         default:
             break;
     }
+
+    // resolve function
+    function r() {
+        if (typeof onFulfilled === 'function') {
+            try {
+                promiseResolve(train2, onFulfilled(self.value))
+            } catch (error) {
+                train2._rejected(error)
+            }
+        } else {
+            train2._fulfilled(self.value)
+        }
+    }
+
+    // reject function
+    function j() {
+        if (typeof onRejected === 'function') {
+            try {
+                promiseResolve(train2, onRejected(self.reason))
+            } catch (error) {
+                train2._rejected(error)
+            }
+        } else {
+            train2._rejected(self.reason)
+        }
+    }
     
-    return train2;
+    return train2
 }
 
 function promiseResolve(promise, x) {
     if (promise === x) {
-
-    } else if (x instanceof Train) {
-
+        return promise._rejected(new TypeError());
     } else if (x && (typeof x === 'function' || typeof x === 'object')) {
+        var called = false, then
 
+        try {
+            then = x.then
+            if (typeof then === 'function') {
+                then.call(x, function (y) {
+                    if (!called) {
+                        called = true
+                        promiseResolve(promise, y)
+                    }
+                }, function (r) {
+                    if (!called) {
+                        called = true
+                        promise._rejected(r)
+                    }
+                });
+            } else {
+                promise._fulfilled(x)
+            }
+        } catch (e) {
+            if (!called) {
+                called = true
+                promise._rejected(e)
+            }
+        }
     } else {
-
+        promise._fulfilled(x)
     }
 }
 
